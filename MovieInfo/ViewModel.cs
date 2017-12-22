@@ -113,6 +113,7 @@ namespace MovieInfo
 
         private async void GoSave(object obj)
         {
+            //REVIEW: Строку подключения в запросы
             using (SqlConnection connection = new SqlConnection("Data Source=.\\SQLEXPRESS;Initial Catalog=Movies;Integrated Security=True"))
             {
                 SqlCommand request = new SqlCommand($"insert into Faves(imdbID) values (\'{movie.imdbID}\')", connection);
@@ -125,6 +126,8 @@ namespace MovieInfo
                 }
                 catch
                 {
+                    //REVIEW: И что? Какие выводы? Мы проглотили исключение и даже не знаем, что случилось - только Bad Response. 
+                    //REVIEW: Хоть залогировать исключение надо
                     MessageBox.Show("SQL bad response");
                 }
             }
@@ -143,11 +146,13 @@ namespace MovieInfo
             MovieApi api = new MovieApi();
             movie = api.GetMovieInfo(SearchBox);
             if (movie == null) return;
+            //REVIEW: Строки сравниваем через String.Equals
             if (movie.Response == "False")
             {
                 MessageBox.Show(movie.Error);
                 return;
             }
+            //REVIEW: Строки сравниваем через String.Equals
             Title = movie.Type == "movie" ? movie.Title : $"({movie.Type}) {movie.Title}";
             Year = movie.Year;
             Rating = movie.Rated;
@@ -156,12 +161,14 @@ namespace MovieInfo
             Plot = movie.Plot;
             try
             {
+                //REVIEW: Куда скачиваем? Надо указать полный путь
                 using (WebClient c = new WebClient())
                     c.DownloadFile(movie.Poster, "poster.png");
                 BitmapImage img = new BitmapImage();
                 img.BeginInit();
                 img.CacheOption = BitmapCacheOption.OnLoad;
                 img.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                //REVIEW: Путь собирается через Path.Combine
                 img.UriSource = new Uri(AppDomain.CurrentDomain.BaseDirectory + "poster.png", UriKind.Absolute);
                 img.EndInit();
                 Poster = img;

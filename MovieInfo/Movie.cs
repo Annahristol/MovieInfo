@@ -18,6 +18,7 @@ namespace MovieInfo
             query = WebUtility.UrlEncode(query);
             try
             {
+                //REVIEW: УРЛ - в настройки
                 WebRequest request = WebRequest.Create($"http://www.omdbapi.com/?apikey=80c2e706&t={query}&plot=full");
                 WebResponse response = request.GetResponse();
                 using (StreamReader reader = new StreamReader(response.GetResponseStream()))
@@ -28,6 +29,7 @@ namespace MovieInfo
                 MessageBox.Show("Connection error");
                 return null;
             }
+            //REVIEW: А строка вида "" - это нормальный результат запроса?
             if (result == null) return null;
             Movie movie = null;
             try
@@ -42,6 +44,7 @@ namespace MovieInfo
             return movie;
         }
     }
+    //REVIEW: класс - в отдельный файл
     class Movie
     {
         public string Response;
