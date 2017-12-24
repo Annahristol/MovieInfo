@@ -10,41 +10,6 @@ using System.Windows;
 
 namespace MovieInfo
 {
-    class MovieApi
-    {
-        public Movie GetMovieInfo(string query)
-        {
-            string result = null;
-            query = WebUtility.UrlEncode(query);
-            try
-            {
-                //REVIEW: УРЛ - в настройки
-                WebRequest request = WebRequest.Create($"http://www.omdbapi.com/?apikey=80c2e706&t={query}&plot=full");
-                WebResponse response = request.GetResponse();
-                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
-                    result = reader.ReadToEnd();
-            }
-            catch
-            {
-                MessageBox.Show("Connection error");
-                return null;
-            }
-            //REVIEW: А строка вида "" - это нормальный результат запроса?
-            if (result == null) return null;
-            Movie movie = null;
-            try
-            {
-                movie = JsonConvert.DeserializeObject<Movie>(result);
-            }
-            catch
-            {
-                MessageBox.Show("Can't load result");
-                return null;
-            }
-            return movie;
-        }
-    }
-    //REVIEW: класс - в отдельный файл
     class Movie
     {
         public string Response;

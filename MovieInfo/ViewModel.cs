@@ -111,24 +111,21 @@ namespace MovieInfo
             Fave.Method = GoSave;
         }
 
-        private async void GoSave(object obj)
+        private void GoSave(object obj)
         {
-            //REVIEW: Строку подключения в запросы
-            using (SqlConnection connection = new SqlConnection("Data Source=.\\SQLEXPRESS;Initial Catalog=Movies;Integrated Security=True"))
+            using (SqlConnection connection = new SqlConnection(Properties.Settings.Default.SQL))
             {
                 SqlCommand request = new SqlCommand($"insert into Faves(imdbID) values (\'{movie.imdbID}\')", connection);
                 try
                 {
-                    await connection.OpenAsync();
-                    await request.ExecuteNonQueryAsync();
+                    connection.Open();
+                    request.ExecuteNonQuery();
                     connection.Close();
                     IsFave = false;
                 }
-                catch
+                catch (Exception e)
                 {
-                    //REVIEW: И что? Какие выводы? Мы проглотили исключение и даже не знаем, что случилось - только Bad Response. 
-                    //REVIEW: Хоть залогировать исключение надо
-                    MessageBox.Show("SQL bad response");
+                    MessageBox.Show(e.Message);
                 }
             }
         }
@@ -146,14 +143,12 @@ namespace MovieInfo
             MovieApi api = new MovieApi();
             movie = api.GetMovieInfo(SearchBox);
             if (movie == null) return;
-            //REVIEW: Строки сравниваем через String.Equals
-            if (movie.Response == "False")
+            if (string.Equals(movie.Response, "False"))
             {
                 MessageBox.Show(movie.Error);
                 return;
             }
-            //REVIEW: Строки сравниваем через String.Equals
-            Title = movie.Type == "movie" ? movie.Title : $"({movie.Type}) {movie.Title}";
+            Title = string.Equals(movie.Type, "movie") ? movie.Title : $"({movie.Type}) {movie.Title}";
             Year = movie.Year;
             Rating = movie.Rated;
             Runtime = movie.Runtime;
@@ -161,15 +156,14 @@ namespace MovieInfo
             Plot = movie.Plot;
             try
             {
-                //REVIEW: Куда скачиваем? Надо указать полный путь
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "poster.png");
                 using (WebClient c = new WebClient())
-                    c.DownloadFile(movie.Poster, "poster.png");
+                    c.DownloadFile(movie.Poster, path);
                 BitmapImage img = new BitmapImage();
                 img.BeginInit();
                 img.CacheOption = BitmapCacheOption.OnLoad;
                 img.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                //REVIEW: Путь собирается через Path.Combine
-                img.UriSource = new Uri(AppDomain.CurrentDomain.BaseDirectory + "poster.png", UriKind.Absolute);
+                img.UriSource = new Uri(path, UriKind.Absolute);
                 img.EndInit();
                 Poster = img;
             }
